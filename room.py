@@ -5,6 +5,7 @@ import os
 
 def create_plane_object(name, vertices, faces):
     """Creates a plane object from vertices and faces and return a BlendData object"""
+    # new object type BlendData Mesh
     new_mesh = bpy.data.meshes.new(name)
     new_mesh.from_pydata(vertices, [], [faces])
     new_mesh.update()
@@ -24,6 +25,17 @@ def create_room(length, width, height):
     return floor, ceiling, wall_1, wall_2, wall_3, wall_4
 
 
+def add_lamp(scene, name, type, energy, color, location, rotation):
+    """Creates a lamp (lamp name, type, location, rotation) at given location on the scene"""
+    new_lamp = bpy.data.lamps.new(name, type)
+    new_lamp.energy = energy
+    new_lamp.color = color
+    lamp_obj = bpy.data.objects.new(name, new_lamp)
+    lamp_obj.location = location
+    lamp_obj.rotation_euler = rotation
+    scene.objects.link(lamp_obj)
+
+
 # blender scene
 bpyscene = bpy.context.scene
 
@@ -37,12 +49,12 @@ length = 50
 height = 24.5
 
 # add camera in the corner
-bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(0.2, 13, 16), rotation=(1.43, 0, -1.48), layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
+bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(0.2, 13, 16), rotation=(1.43, 0, -1.48), )
 bpyscene.camera = bpy.context.object
 
 bpyscene.objects['Camera'].select
 
-#camera zoom out
+# camera zoom out
 bpy.context.object.data.lens = 10
 
 # create room
@@ -50,11 +62,17 @@ room = create_room(length, width, height)
 
 # add room to the scene
 for part in room:
+
     bpyscene.objects.link(part)
+    part.select = True
+    bpyscene.objects.active = part
 
 # Add lights in the corners
-bpy.ops.object.lamp_add(type='AREA', view_align=False, location=(0, 0, height), rotation=(0.45, -0.8, 0))
-bpy.ops.object.lamp_add(type='AREA', view_align=False, location=(0, width, height), rotation=(-0.45, -0.8, 0))
+#bpy.ops.object.lamp_add(type='HEMI', view_align=False, location=(0, 0, height-1), rotation=(0.45, -0.8, 0))
+#bpy.ops.object.lamp_add(type='HEMI', view_align=False, location=(0, width, height-1), rotation=(-0.45, -0.8, 0))
+
+add_lamp(bpyscene, 'LAMP1', 'HEMI', energy=0.5, color=(1, 0.89, 0.6), location=(0, 0, height-1), rotation=(0.45, -0.8, 0))
+add_lamp(bpyscene, 'LAMP1', 'HEMI', energy=0.5, color=(1, 0.89, 0.6), location=(0, width, height-1), rotation=(-0.45, -0.8, 0))
 
 # Render settings
 bpyscene.render.image_settings.color_mode = 'RGBA'
