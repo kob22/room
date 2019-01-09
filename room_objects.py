@@ -1,6 +1,7 @@
 import bpy
 from figures import *
 
+
 def create_room(length, width, height, scene):
     """Creates a room with given dimensions and returns 6 BlendData objects"""
     # Room vertices
@@ -21,6 +22,7 @@ def create_room(length, width, height, scene):
     scene.objects.link(wall_2)
     scene.objects.link(wall_3)
     scene.objects.link(wall_4)
+
 
 def create_table(name, scene, location, scale):
     """Create simple table"""
@@ -58,3 +60,51 @@ def create_table(name, scene, location, scale):
     table.scale = scale
     # set table location
     table.location = location
+
+
+def create_chair(name, scene, location, scale, rotation):
+    """Creates simple chair"""
+    # deselect all object on the sceene
+    bpy.ops.object.select_all(action='DESELECT')
+
+    # creates legs
+    legs = []
+    for i in range(1, 5):
+        legs.append(create_cuboid("Leg " + str(i), 0.12, 0.12, 0.8))
+
+    # set up legs location
+    x, y = 0, 0
+    for leg in legs:
+        leg.location = (x * 0.8, y * 0.8, 0)
+        if y == 0:
+            y += 1
+        elif y == 1:
+            x = 1
+            y = 0
+
+    # backrest
+    backrest = create_cuboid('Backrest', 0.92, 0.12, 1)
+    backrest.location = (0, 0, 0.8)
+
+    # chair
+    chair = create_cuboid(name, 0.92, 0.92, 0.12)
+    chair.location = (0, 0, 0.8)
+
+    # join all parts together
+    for leg in legs:
+        scene.objects.link(leg)
+        leg.select = True
+
+    scene.objects.link(backrest)
+    backrest.select = True
+    scene.objects.link(chair)
+    chair.select = True
+    scene.objects.active = chair
+    bpy.ops.object.join()
+
+    # set chair location on the scne
+    chair.location = location
+    # set scale
+    chair.scale = scale
+    # set rotation
+    chair.rotation_euler = rotation

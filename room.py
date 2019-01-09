@@ -37,7 +37,7 @@ add_lamp(bpyscene, 'LAMP2', 'AREA', color=(1, 1, 1), size=1.5, location=(length/
 list_cameras = []
 # bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(0.2, 13, 16), rotation=(1.43, 0, -1.48), )
 cam1 = add_camera(bpyscene, 'CAMERA1', 10, location=(0.2, 1.3, 1.6), rotation=(1.43, 0, -1.48))
-cam2 = add_camera(bpyscene, 'CAMERA2', 10, location=(2.2, 2.2, 1.6), rotation=(1.40, 0, -1.96))
+cam2 = add_camera(bpyscene, 'CAMERA2', 10, location=(2.2, 2.2, 0.74), rotation=(1.57, 0, -2.05))
 list_cameras.append(cam1.name)
 list_cameras.append(cam2.name)
 
@@ -47,8 +47,8 @@ walls_color = create_material('wild_grey', color=(0.174647, 0.212231, 0.234551),
 for i in range(1,5):
     set_material(bpyscene.objects['Wall ' + str(i)], walls_color)
 #ceiling color
-ceiling_color = create_material('white', color=(1, 1, 1), alpha=1)
-set_material(bpyscene.objects['Ceiling'], ceiling_color)
+white_material = create_material('white', color=(1, 1, 1), alpha=1)
+set_material(bpyscene.objects['Ceiling'], white_material)
 
 # floor color
 floor_color = create_material(('brown'), color=(0.235, 0.069, 0), alpha=1)
@@ -59,10 +59,17 @@ create_table('Table', bpyscene, location=(3.8, 0.5, 0.4), scale=(0.4, 0.4, 0.4))
 table_color = create_material(('dark brwon'), color=(0.2, 0.1, 0), alpha=1)
 set_material(bpyscene.objects['Table'], table_color)
 
+# create chairs and set colors
+create_chair('Chair 1', bpyscene, location=(4.5, 2.1, 0.3), scale=(0.4, 0.4, 0.4), rotation=(0, 0, -3.8))
+create_chair('Chair 2', bpyscene, location=(3.1, 0.7, 0.3), scale=(0.4, 0.4, 0.4), rotation=(0, 0, -0.95))
+set_material(bpyscene.objects['Chair 1'], white_material)
+set_material(bpyscene.objects['Chair 2'], white_material)
+
+
 # Render settings
 bpyscene.render.image_settings.color_mode = 'RGBA'
 bpyscene.render.image_settings.file_format = 'PNG'
-bpyscene.cycles.samples = 2
+bpyscene.cycles.samples = 10
 # render scene
 for cam in list_cameras:
     # set CAMERAX as a active camera for render
