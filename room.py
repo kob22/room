@@ -1,136 +1,9 @@
 import bpy
 import os
 
-
-def create_plane_object(name, vertices, faces):
-    """Creates a plane object from vertices and faces and return a BlendData object"""
-    # new object type BlendData Mesh
-    new_mesh = bpy.data.meshes.new(name)
-    # make mesh from list vertices and faces
-    new_mesh.from_pydata(vertices, [], [faces])
-    # update
-    new_mesh.update()
-    return bpy.data.objects.new(name, new_mesh)
-
-
-def create_room(length, width, height):
-    """Creates a room with given dimensions and returns 6 BlendData objects"""
-    # Room vertices
-    vertices = [(0, 0, 0), (0, width, 0), (length, width, 0), (length, 0, 0), (0, 0, height), (0, width, height), (length, width, height) , (length, 0, height)]
-
-    # creates room planes
-    floor = create_plane_object("Floor", vertices, [0, 1, 2, 3])
-    ceiling = create_plane_object("Ceiling", vertices, [4, 5, 6, 7])
-
-    wall_1 = create_plane_object("Wall 1", vertices, [0, 1, 5, 4])
-    wall_2 = create_plane_object("Wall 2", vertices, [1, 2, 6, 5])
-    wall_3 = create_plane_object("Wall 3", vertices, [2, 3, 7, 6])
-    wall_4 = create_plane_object("Wall 4", vertices, [3, 0, 4, 7])
-
-    return floor, ceiling, wall_1, wall_2, wall_3, wall_4
-
-
-def add_lamp(scene, name, type, size, color, location, rotation):
-    """Creates a lamp (lamp name, type, location, rotation) at given location on the scene"""
-    # create lamp
-    new_lamp = bpy.data.lamps.new(name, type)
-    # size lamp
-    new_lamp.size = size
-    # color
-    new_lamp.color = color
-    # create blender object
-    lamp_obj = bpy.data.objects.new(name, new_lamp)
-    # set location and rotation
-    lamp_obj.location = location
-    lamp_obj.rotation_euler = rotation
-    # link to the scene
-    scene.objects.link(lamp_obj)
-    return lamp_obj
-
-
-def add_camera(scene, name, lens,  location, rotation):
-    """Creates new came at given location on the scene"""
-    new_camera = bpy.data.cameras.new(name)
-    # camera lens(zoom)
-    new_camera.lens = lens
-    # create blender camera obj
-    camera_obj = bpy.data.objects.new(name, new_camera)
-    # add to the scene
-    scene.objects.link(camera_obj)
-    # set location and rotation camera
-    camera_obj.location = location
-    camera_obj.rotation_euler = rotation
-
-    return camera_obj
-
-
-def create_material(name, color, alpha):
-    """Create material with color"""
-    material = bpy.data.materials.new(name)
-    material.diffuse_color = color
-    material.alpha = alpha
-    return material
-
-
-def set_material(object, material):
-    """Set material at object"""
-    obj_data = object.data
-    obj_data.materials.append(material)
-
-
-def create_cuboid(name, length, width, height):
-    """Creates simple cuboid of given dimensions"""
-    # Vertices
-    vertices = [(0, 0, 0), (0, width, 0), (length, width, 0), (length, 0, 0), (0, 0, height), (0, width, height), (length, width, height) , (length, 0, height)]
-    # Faces
-    faces = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]]
-    # creates new meshe from vertices and faces
-    new_cuboid = bpy.data.meshes.new(name)
-    new_cuboid.from_pydata(vertices, [], faces)
-    # new cuboid obj
-    cuboid_obj = bpy.data.objects.new(name, new_cuboid)
-
-    return cuboid_obj
-
-
-def create_table(name, scene, location, scale):
-    """Create simple table"""
-    # deselect all object on the sceene
-    bpy.ops.object.select_all(action='DESELECT')
-
-    # creates legs
-    legs = []
-    for i in range(1, 5):
-        legs.append(create_cuboid("Leg " + str(i), 0.2, 0.2, 1))
-
-    # set up legs location
-    x, y = 0, 0
-    for leg in legs:
-        leg.location = (x, y, 0)
-        if y == 0:
-            y += 2
-        elif y == 2:
-            x = 1
-            y = 0
-    # create top of table
-    table = create_cuboid(name, 1.8, 2.8, 0.2)
-    table.location = (-0.3, -0.3, 1)
-
-    # join all parts together
-    for leg in legs:
-        scene.objects.link(leg)
-        leg.select = True
-    scene.objects.link(table)
-    table.select = True
-    scene.objects.active = table
-    bpy.ops.object.join()
-
-    # set scale
-    table.scale = scale
-    # set table location
-    table.location = location
-
-
+from room_objects import *
+from other_objects import *
+from materials import *
 
 # blender scene
 bpyscene = bpy.context.scene
@@ -147,11 +20,7 @@ height = 2.5
 
 
 # create room
-room = create_room(length, width, height)
-
-# add room to the scene
-for part in room:
-    bpyscene.objects.link(part)
+room = create_room(length, width, height, bpyscene)
 
 
 # Add lights in the corners
@@ -193,7 +62,7 @@ set_material(bpyscene.objects['Table'], table_color)
 # Render settings
 bpyscene.render.image_settings.color_mode = 'RGBA'
 bpyscene.render.image_settings.file_format = 'PNG'
-bpyscene.cycles.samples = 10g
+bpyscene.cycles.samples = 2
 # render scene
 for cam in list_cameras:
     # set CAMERAX as a active camera for render
