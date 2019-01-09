@@ -78,6 +78,60 @@ def set_material(object, material):
     obj_data.materials.append(material)
 
 
+def create_cuboid(name, length, width, height):
+    """Creates simple cuboid of given dimensions"""
+    # Vertices
+    vertices = [(0, 0, 0), (0, width, 0), (length, width, 0), (length, 0, 0), (0, 0, height), (0, width, height), (length, width, height) , (length, 0, height)]
+    # Faces
+    faces = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]]
+    # creates new meshe from vertices and faces
+    new_cuboid = bpy.data.meshes.new(name)
+    new_cuboid.from_pydata(vertices, [], faces)
+    # new cuboid obj
+    cuboid_obj = bpy.data.objects.new(name, new_cuboid)
+
+    return cuboid_obj
+
+
+def create_table(name, scene, location, scale):
+    """Create simple table"""
+    # deselect all object on the sceene
+    bpy.ops.object.select_all(action='DESELECT')
+
+    # creates legs
+    legs = []
+    for i in range(1, 5):
+        legs.append(create_cuboid("Leg " + str(i), 0.2, 0.2, 1))
+
+    # set up legs location
+    x, y = 0, 0
+    for leg in legs:
+        leg.location = (x, y, 0)
+        if y == 0:
+            y += 2
+        elif y == 2:
+            x = 1
+            y = 0
+    # create top of table
+    table = create_cuboid(name, 1.8, 2.8, 0.2)
+    table.location = (-0.3, -0.3, 1)
+
+    # join all parts together
+    for leg in legs:
+        scene.objects.link(leg)
+        leg.select = True
+    scene.objects.link(table)
+    table.select = True
+    scene.objects.active = table
+    bpy.ops.object.join()
+
+    # set scale
+    table.scale = scale
+    # set table location
+    table.location = location
+
+
+
 # blender scene
 bpyscene = bpy.context.scene
 bpyscene.render.engine = 'CYCLES'
@@ -107,6 +161,7 @@ for part in room:
 # add_lamp(bpyscene, 'LAMP2', 'HEMI', energy=0.5, color=(1, 0.89, 0.6), location=(0, width, height-1), rotation=(-1, -0.8, 0))
 # add lights as a window from wall
 add_lamp(bpyscene, 'LAMP1', 'AREA', color=(1, 1, 1), size=1.5, location=(0.01, width/2, height -1), rotation=(0,-1.43, 0))
+add_lamp(bpyscene, 'LAMP2', 'AREA', color=(1, 1, 1), size=1.5, location=(length/2, width-0.2, height -1), rotation=(-1,-1.43, 0))
 
 # add cameras
 # list of existing cameras
@@ -130,12 +185,15 @@ set_material(bpyscene.objects['Ceiling'], ceiling_color)
 floor_color = create_material(('brown'), color=(0.235, 0.069, 0), alpha=1)
 set_material(bpyscene.objects['Floor'], floor_color)
 
+# set table
+create_table('Table', bpyscene, location=(3.8, 0.5, 0.4), scale=(0.4, 0.4, 0.4))
+table_color = create_material(('dark brwon'), color=(0.2, 0.1, 0), alpha=1)
+set_material(bpyscene.objects['Table'], table_color)
 
-g = list(bpyscene.objects)
 # Render settings
 bpyscene.render.image_settings.color_mode = 'RGBA'
 bpyscene.render.image_settings.file_format = 'PNG'
-#bpyscene.cycles.samples = 10
+bpyscene.cycles.samples = 10g
 # render scene
 for cam in list_cameras:
     # set CAMERAX as a active camera for render
