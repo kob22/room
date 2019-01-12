@@ -32,14 +32,6 @@ room = create_room(length, width, height, bpyscene)
 add_lamp(bpyscene, 'LAMP1', 'AREA', color=(1, 1, 1), size=1.5, location=(0.01, width/2, height -1), rotation=(0,-1.43, 0))
 add_lamp(bpyscene, 'LAMP2', 'AREA', color=(1, 1, 1), size=1.5, location=(length/2, width-0.2, height -1), rotation=(-1,-1.43, 0))
 
-# add cameras
-# list of existing cameras
-list_cameras = []
-# bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(0.2, 13, 16), rotation=(1.43, 0, -1.48), )
-cam1 = add_camera(bpyscene, 'CAMERA1', 10, location=(0.2, 1.3, 1.6), rotation=(1.43, 0, -1.48))
-cam2 = add_camera(bpyscene, 'CAMERA2', 10, location=(2.2, 2.2, 0.74), rotation=(1.57, 0, -2.05))
-list_cameras.append(cam1.name)
-list_cameras.append(cam2.name)
 
 
 # walls color
@@ -66,10 +58,22 @@ set_material(bpyscene.objects['Chair 1'], white_material)
 set_material(bpyscene.objects['Chair 2'], white_material)
 
 
+# add cameras
+# list of existing cameras
+list_cameras = []
+# bpy.ops.object.camera_add(view_align=True, enter_editmode=False, location=(0.2, 13, 16), rotation=(1.43, 0, -1.48), )
+cam1 = add_camera(bpyscene, 'CAMERA1', 10, location=(0.2, 1.3, 1.6), rotation=(1.43, 0, -1.48))
+cam2 = add_camera(bpyscene, 'CAMERA2', 10, location=(2.2, 2.2, 0.74), rotation=(1.57, 0, -2.05))
+list_cameras.append(cam1.name)
+list_cameras.append(cam2.name)
+
+
 # Render settings
 bpyscene.render.image_settings.color_mode = 'RGBA'
 bpyscene.render.image_settings.file_format = 'PNG'
 bpyscene.cycles.samples = 10
+
+bpy.context.scene.cycles.film_transparent = True
 # render scene
 for cam in list_cameras:
     # set CAMERAX as a active camera for render
